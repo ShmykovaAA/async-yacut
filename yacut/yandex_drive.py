@@ -7,6 +7,9 @@ API_VERSION = 'v1'
 REQUEST_UPLOAD_URL = (
     f'{API_HOST}{API_VERSION}/disk/resources/upload'
 )
+REQUEST_DOWNLOAD_URL = (
+    f'{API_HOST}{API_VERSION}/disk/resources/download'
+)
 
 
 async def async_upload_files_to_disk(files, disk_token):
@@ -28,8 +31,9 @@ async def async_upload_files_to_disk(files, disk_token):
 
 
 async def upload_file_to_disk(session, file, auth_headers,):
+    file_path = f'app:/{file.filename}'
     payload = {
-        'path': f'app:/{file.filename}',
+        'path': file_path,
         'overwrite': 'true',
     }
     async with session.get(
@@ -48,4 +52,12 @@ async def upload_file_to_disk(session, file, auth_headers,):
     ) as response:
         response.raise_for_status()
         download_url = response.headers.get('Location')
+    async with session.get(
+        REQUEST_DOWNLOAD_URL,
+        headers=auth_headers,
+        params={'path': file_path},
+    ) as response:
+        response.raise_for_status()
+        response_data = await response.json()
+        download_url = response_data['href']
     return download_url
