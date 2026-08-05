@@ -1,43 +1,26 @@
-import string
-from random import random
-
-from flask import abort, flash, redirect, render_template, url_for
+from flask import flash, redirect, render_template, url_for
 
 from . import app, db
-from .forms import URLForm, FilesForm
+from .constants import RESERVED_SHORT_IDS
+from .forms import FilesForm, URLForm
 from .models import URLMap
+from .units import get_unique_short_id
+from .yandex_drive import async_upload_files_to_disk
 
-SHORT_ID_LENGTH = 6
-RESERVED_SHORT_IDS = {'files'}
-
-
-def get_unique_short_id():
-    symbols = string.ascii_letters + string.digits
-
-    while True:
-        short_id = ''.join(
-            random.choice(symbols)
-            for _ in range(SHORT_ID_LENGTH)
-        )
-
-        if URLMap.query.filter_by(short=short_id).first() is None:
-            return short_id
-                
 
 @app.route('/', methods=['GET', 'POST'])
 def index_view():
     form = URLForm()
-    short_url = None
 
     if form.validate_on_submit():
-        if form.custom_id.data is not None:
+        if form.custom_id.data:
             short = form.custom_id.data
             if (
                 URLMap.query.filter_by(short=short).first() is not None
                 or short in RESERVED_SHORT_IDS
             ):
                 flash('Предложенный вариант короткой ссылки уже существует.')
-                return render_template('get_short_link.html', form=form)
+                return redirect(url_for('index_view'))
         else:
             short = get_unique_short_id()
         url = URLMap(
@@ -70,19 +53,27 @@ def redirect_view(short):
 
 
 @app.route('/files', methods=['GET', 'POST'])
-def files_view():
+async def files_view():
     form = FilesForm()
     uploaded_files = []
     if form.validate_on_submit():
-        for file in form.files.data:
-            download_url = upload_to_disk(file)
+        files = form.files.data
+        download_urls = await async_upload_files_to_disk(
+            files=files,
+            disk_token=app.config['DISK_TOKEN'],
+        )
+        uploaded_files = []
+        for index, file in enumerate(files):
+            download_url = download_urls[index]
             short = get_unique_short_id()
+
             url_map = URLMap(
                 original=download_url,
-                short=short
+                short=short,
             )
             db.session.add(url_map)
-            uploaded_files = append({
+
+            uploaded_files.append({
                 'filename': file.filename,
                 'short_url': url_for(
                     'redirect_view',
@@ -90,12 +81,14 @@ def files_view():
                     _external=True,
                 ),
             })
+
         db.session.commit()
+
         return render_template(
             'files.html',
             form=form,
             uploaded_files=uploaded_files,
-        ),
+        )
 
     return render_template(
         'files.html',

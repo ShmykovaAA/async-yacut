@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}
+  YaCut — укоротитель ссылок
+{% endblock %}
+
+{% block content %}
+<section class="container my-5 px-4">
+
+  <h1 class="text-center">
+    <span class="text-danger">Ya</span>Cut
+  </h1>
+
+  <p class="text-center my-4">
+    Создайте короткую ссылку автоматически или предложите свой вариант
+  </p>
+
+  <div class="row justify-content-center my-3">
+    <div class="col-sm-8 col-md-6">
+
+      <form method="POST" novalidate>
+        {{ form.hidden_tag() }}
+
+        <div class="mb-3">
+          {{ form.original_link(
+            class="form-control form-control-lg py-2",
+            placeholder=form.original_link.label.text
+          ) }}
+
+          {% if form.original_link.errors %}
+            <div class="text-danger mt-2">
+              {% for error in form.original_link.errors %}
+                <p class="mb-1">{{ error }}</p>
+              {% endfor %}
+            </div>
+          {% endif %}
+        </div>
+
+        <div class="mb-3">
+          {{ form.custom_id(
+            class="form-control form-control-lg py-2",
+            placeholder=form.custom_id.label.text
+          ) }}
+
+          {% if form.custom_id.errors %}
+            <div class="text-danger mt-2">
+              {% for error in form.custom_id.errors %}
+                <p class="mb-1">{{ error }}</p>
+              {% endfor %}
+            </div>
+          {% endif %}
+        </div>
+
+        {{ form.submit(class="btn btn-primary px-5 py-3") }}
+      </form>
+
+    </div>
+  </div>
+
+  {% if short_url %}
+    <div class="row justify-content-center mt-4">
+      <div class="col-sm-8 col-md-6 text-center">
+        <h5>Ваша новая ссылка готова:</h5>
+
+        <p>
+          <a href="{{ short_url }}">
+            {{ short_url }}
+          </a>
+        </p>
+      </div>
+    </div>
+  {% endif %}
+
+</section>
+{% endblock %}
