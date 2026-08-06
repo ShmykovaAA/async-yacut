@@ -1,7 +1,6 @@
-from flask import flash, redirect, render_template, url_for
+from flask import redirect, render_template, url_for
 
 from . import app, db
-from .constants import RESERVED_SHORT_IDS
 from .forms import FilesForm, URLForm
 from .models import URLMap
 from .units import get_unique_short_id
@@ -15,12 +14,6 @@ def index_view():
     if form.validate_on_submit():
         if form.custom_id.data:
             short = form.custom_id.data
-            if (
-                URLMap.query.filter_by(short=short).first() is not None
-                or short in RESERVED_SHORT_IDS
-            ):
-                flash('Предложенный вариант короткой ссылки уже существует.')
-                return redirect(url_for('index_view'))
         else:
             short = get_unique_short_id()
         url = URLMap(
