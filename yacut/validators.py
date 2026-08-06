@@ -1,8 +1,7 @@
 import re
 
-from .constants import (
-    RESERVED_SHORT_IDS, CUSTOM_ID_PATTERN, CUSTOM_SHORT_ID_LENGTH
-)
+from .constants import (CUSTOM_ID_PATTERN, CUSTOM_SHORT_ID_LENGTH,
+                        RESERVED_SHORT_IDS)
 from .models import URLMap
 
 

@@ -1,13 +1,11 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileRequired, MultipleFileField
 from wtforms import StringField, SubmitField, URLField
-from wtforms.validators import (
-    URL, DataRequired, Length, Optional, Regexp, ValidationError
-)
+from wtforms.validators import (URL, DataRequired, Length, Optional, Regexp,
+                                ValidationError)
 
-from .constants import (
-    CUSTOM_SHORT_ID_LENGTH, CUSTOM_ID_PATTERN, MIN_CUSTOM_SHORT_ID_LENGTH
-)
+from .constants import (CUSTOM_ID_PATTERN, CUSTOM_SHORT_ID_LENGTH,
+                        MIN_CUSTOM_SHORT_ID_LENGTH)
 from .validators import short_id_is_occupied
 
 
@@ -46,4 +44,3 @@ class FilesForm(FlaskForm):
         ]
     )
     submit = SubmitField('Загрузить')
-
