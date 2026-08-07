@@ -31,7 +31,7 @@ async def async_upload_files_to_disk(files, disk_token):
 
 
 async def upload_file_to_disk(session, file, auth_headers,):
-    file_path = f'app:/{file.filename}'
+    file_path = 'app:/' + file.filename
     payload = {
         'path': file_path,
         'overwrite': 'true',
